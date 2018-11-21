@@ -1,0 +1,6 @@
+version: '3'
+services:
+  flask:
+    volumes:
+    - '.:/srv/card-collection'
+    command: 'uwsgi --master -s 0.0.0.0:3011 --http :8080 --http-to :8080 --manage-script-name --mount /=run:app'

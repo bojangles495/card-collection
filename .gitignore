@@ -1,0 +1,6 @@
+__pycache__/
+node_modules/
+*.pyc
+.*.sw?
+/node_modules
+/venv
