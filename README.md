@@ -63,3 +63,9 @@ FLASK_APP=run.py flask run
 ##SETUP NODE Modules
 
 1. npm ci
+
+
+
+Will need to download Cards Json file from <a href="https://mtgjson.com/">https://mtgjson.com</a>
+Make sure the download file is called "AllCards.json"
+Place file under root of back_end directory
