@@ -1,4 +1,5 @@
 from pprint import pprint
+import math
 
 class Pagination:
   def check_int(s):
@@ -18,23 +19,29 @@ class Pagination:
     beginIndex = 0
     endIndex = 99
 
-    if len(pageQuery) == 1:
+    if len(pageQuery) == 1 and arrayLength > 99:
       if Pagination.check_int(pageQuery[0]):
+        defaultBeginIndex = 0
+        defaultEndIndex = 99
+        maxEndIndex = (math.ceil((arrayLength/100)) * 100) - 1
+        maxBeginIndex = maxEndIndex - 99
         currentPage = int(pageQuery[0])
-        endIndex = (currentPage * 100) - 1
 
-        if endIndex > 0:
-          beginIndex = endIndex - 99
+        if currentPage < 2:
+          defaultPageBeginIndex = defaultBeginIndex
+          defaultPageEndIndex = defaultEndIndex
         else:
-          beginIndex = 0
-          endIndex = 99
+          defaultPageBeginIndex = defaultBeginIndex + ((currentPage - 1) * 100)
+          defaultPageEndIndex = defaultEndIndex + ((currentPage - 1) * 100)
 
-        if beginIndex > arrayLength and arrayLength != 0:
-          beginIndex = Pagination.updateStartIndex(beginIndex, arrayLength)
-          endIndex = beginIndex + 99
+
+
+        if defaultPageBeginIndex > maxEndIndex:
+          beginIndex = maxBeginIndex
+          endIndex = maxEndIndex
         else:
-          beginIndex = 0
-          endIndex = 99
+          beginIndex = defaultPageBeginIndex
+          endIndex = defaultPageEndIndex
 
     return {'beginIndex': beginIndex, 'endIndex': endIndex}
 
