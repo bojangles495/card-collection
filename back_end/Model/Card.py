@@ -76,6 +76,7 @@ class Card:
   def setColors(self, card):
     if 'colors' in card:
       self.colors = card['colors']
+      self.colors.sort(key=str.lower)
     else:
       self.colors = []
 
@@ -325,6 +326,16 @@ class Card:
     else:
       self.uuid = ""
 
+
+  def getColors(self):
+    return self.colors
+
+  def getColorIdentity(self):
+    return self.colorIdentity
+
+  def getColorIndicator(self):
+    return self.colorIndicator
+
   def getName(self):
     return self.name
 
@@ -336,8 +347,6 @@ class Card:
 
   def getTypes(self):
     return self.types
-  def getColorIdentity(self):
-    return self.colorIdentity
 
   def getUUID(self):
     return self.uuid

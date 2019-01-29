@@ -1,83 +1,26 @@
 from pprint import pprint
+import numpy
+
 
 class Filter:
-  def hasCardBeenSeen(foundCards, cardName):
-    if cardName in foundCards:
-      return True
-    else:
-      return False
-
-  def excludeCard(excludeList, cardColors):
-    exclude = False
-
-    for color in excludeList:
-      if set(color).issubset(cardColors):
-        exclude = True
-    return exclude
-
-  def getExclusionList(query):
-    all_colors = ['W', 'B', 'U', 'G', 'R']
-
-    for color in query:
-      all_colors.remove(color)
-
-    return all_colors
-
-
-
-  def filterByColorWithAdditional(query, topLevelFilteredList, match_exactly, match_multi, exclude):
-    filteredList = []
-    foundIds = set()
-
-    if len(query) > 0:
-      if len(topLevelFilteredList) > 0:
-        if match_exactly == True and exclude == False:
-          filteredList = []
-        elif match_exactly == False and exclude == True:
-          filteredList = []
-        elif match_exactly == True and exclude == True:
-          filteredList = []
-        elif match_multi == True:
-          filteredList = []
-        else:
-          filteredList = topLevelFilteredList
-      else:
-        if match_exactly == True and exclude == False:
-          for cardName, card in ALLCARDSJSON.items():
-            if 'colorIdentity' in card and set(query).issubset(card['colorIdentity']) and card['name'] not in foundIds:
-              foundIds.add(card['name'])
-              filteredList.append(card)
-
-        elif match_exactly == False and exclude == True:
-          exclusion_list = Filter.getExclusionList(query)
-
-          for cardName, card in ALLCARDSJSON.items():
-            if 'colors' in card and len(card['colors']) > 0 and len(query) > 0:
-              should_exclude = Filter.excludeCard(exclusion_list, card['colors'])
-
-              if should_exclude == False and card['name'] not in foundIds:
-                foundIds.add(card['name'])
-                filteredList.append(card)
-
-        elif match_exactly == True and exclude == True:
-          filteredList = []
-        elif match_multi == True:
-          filteredList = []
-        else:
-          filteredList = topLevelFilteredList
-    else:
-      filteredList = topLevelFilteredList
-
-    return filteredList
-
-
-
-#######DONE########
   def filteredWithSuperTypes(nameFilter, typesFilter, textFilter):
-    if len(nameFilter) > 0 or len(typesFilter) > 0 or len(textFilter) > 0:
-      return True
-    else:
-      return False
+    return len(nameFilter) > 0 or len(typesFilter) > 0 or len(textFilter) > 0
+
+  def generateSortedListByName(nameList, listToSort):
+    result = []
+    nameList.sort(key=str.lower)
+
+    for name in nameList:
+      result.append(listToSort[name])
+
+    return result
+
+  def addFilteredCard(addCard, cardName, card, nameList, filteredList):
+    if addCard == True:
+      filteredList[cardName] = card
+
+      if cardName not in nameList:
+        nameList.append(cardName)
 
   def filterWithName(allCards, query):
     filteredCards = []
@@ -127,9 +70,168 @@ class Filter:
 
     return filteredCards
 
+  def filterExcludeOnlyConstraint(cardListToFilter, query, filteredWithSuperTypes):
+    filteredList = {}
+    nameList = []
+
+    for color in query:
+      if filteredWithSuperTypes == True:
+        for card in cardListToFilter:
+          addCard = False
+          currentCardName = ""
+
+          for singleCard in card:
+            currentCardName = singleCard.getName()
+            singleColorMatch = numpy.array_equal([color], singleCard.getColors())
+            multiColorMatch = numpy.array_equal(query, singleCard.getColors())
+
+            if (singleColorMatch == True or (multiColorMatch == True and currentCardName not in nameList)) and addCard != True:
+              addCard = True
+
+          Filter.addFilteredCard(addCard, currentCardName, card, nameList, filteredList)
+      else:
+        for cardName, card in cardListToFilter.items():
+          addCard = False
+
+          for singleCard in card:
+            singleColorMatch = numpy.array_equal([color], singleCard.getColors())
+            multiColorMatch = numpy.array_equal(query, singleCard.getColors())
+
+            if (singleColorMatch == True or (multiColorMatch == True and cardName not in nameList)) and addCard != True:
+              addCard = True
+
+          Filter.addFilteredCard(addCard, cardName, card, nameList, filteredList)
+
+    return Filter.generateSortedListByName(nameList, filteredList)
+
+  def filterMatchExactConstraint(cardListToFilter, query, filteredWithSuperTypes):
+    filteredList = {}
+    nameList = []
+
+    if filteredWithSuperTypes == True:
+      for card in cardListToFilter:
+        addCard = False
+        foundMatch = False
+        currentCardName = ""
+
+        for singleCard in card:
+          currentCardName = singleCard.getName()
+          if addCard != True:
+            foundMatch = all(elem in singleCard.getColors() for elem in query)
+
+            if foundMatch == True:
+              addCard = True
+        Filter.addFilteredCard(addCard, currentCardName, card, nameList, filteredList)
+    else:
+      for cardName, card in cardListToFilter.items():
+        addCard = False
+        foundMatch = False
+
+        for singleCard in card:
+          if addCard != True:
+            foundMatch = all(elem in singleCard.getColors() for elem in query)
+
+            if foundMatch == True:
+              addCard = True
+
+        Filter.addFilteredCard(addCard, cardName, card, nameList, filteredList)
+
+    return Filter.generateSortedListByName(nameList, filteredList)
+
+  def filterMatchExactAndExcludeConstraint(cardListToFilter, query, filteredWithSuperTypes):
+    filteredList = {}
+    nameList = []
+
+    if filteredWithSuperTypes == True:
+      for card in cardListToFilter:
+        addCard = False
+        currentCardName = ""
+
+        for singleCard in card:
+          currentCardName = singleCard.getName()
+          multiColorMatch = numpy.array_equal(query, singleCard.getColors())
+
+          if multiColorMatch == True and currentCardName not in nameList and addCard != True:
+            addCard = True
+
+        Filter.addFilteredCard(addCard, currentCardName, card, nameList, filteredList)
+    else:
+      for cardName, card in cardListToFilter.items():
+        addCard = False
+
+        for singleCard in card:
+          multiColorMatch = numpy.array_equal(query, singleCard.getColors())
+
+          if multiColorMatch == True and cardName not in nameList and addCard != True:
+            addCard = True
+
+        Filter.addFilteredCard(addCard, cardName, card, nameList, filteredList)
+
+    return Filter.generateSortedListByName(nameList, filteredList)
+
+  def filterMatchMultiColorConstraint(cardListToFilter, query, filteredWithSuperTypes):
+    filteredList = {}
+    nameList = []
+
+    for color in query:
+      if filteredWithSuperTypes == True:
+        for card in cardListToFilter:
+          addCard = False
+          currentCardName = ""
+
+          for singleCard in card:
+            currentCardName = singleCard.getName()
+
+            if len(singleCard.getColors()) > 1 and addCard != True and currentCardName not in nameList and color in singleCard.getColors():
+              addCard = True
+
+          Filter.addFilteredCard(addCard, currentCardName, card, nameList, filteredList)
+      else:
+        for cardName, card in cardListToFilter.items():
+          addCard = False
+
+          for singleCard in card:
+            if len(singleCard.getColors()) > 1 and addCard != True and cardName not in nameList and color in singleCard.getColors():
+              addCard = True
+
+          Filter.addFilteredCard(addCard, cardName, card, nameList, filteredList)
+
+    return Filter.generateSortedListByName(nameList, filteredList)
+
+  def filterByColorWithConstraints(cardListToFilter, query, filteredWithSuperTypes, matchExactFilter, matchMultiFilter, excludeFilter):
+    filteredList = {}
+    nameList = []
+
+    if len(query) > 0:
+      if matchExactFilter == False and excludeFilter == True:
+        result = Filter.filterExcludeOnlyConstraint(cardListToFilter, query, filteredWithSuperTypes)
+      elif matchExactFilter == True and excludeFilter == False:
+        result = Filter.filterMatchExactConstraint(cardListToFilter, query, filteredWithSuperTypes)
+      elif matchExactFilter == True and excludeFilter == True:
+        result = Filter.filterMatchExactAndExcludeConstraint(cardListToFilter, query, filteredWithSuperTypes)
+      elif matchMultiFilter == True:
+        result = Filter.filterMatchMultiColorConstraint(cardListToFilter, query, filteredWithSuperTypes)
+      else:
+        result = []
+    else:
+      if filteredWithSuperTypes == True:
+        for card in cardListToFilter:
+          currentCardName = ""
+          for singleCard in card:
+            currentCardName = singleCard.getName()
+
+          if currentCardName not in nameList:
+            nameList.append(currentCardName)
+            filteredList[currentCardName] = card
+      else:
+        filteredList = {}
+
+      result = Filter.generateSortedListByName(nameList, filteredList)
+
+    return result
+
   def filterByColorNoConstraints(cardListToFilter, query, filteredWithSuperTypes):
     filteredList = {}
-    foundIds = set()
     nameList = []
 
     if len(query) > 0:
@@ -160,16 +262,12 @@ class Filter:
               if color in singleCard.getColorIdentity():
                 addCard = True
 
-            if addCard == True:
-              filteredList[cardName] = card
-
-              if cardName not in nameList:
-                nameList.append(cardName)
-
+            Filter.addFilteredCard(addCard, cardName, card, nameList, filteredList)
     else:
       if filteredWithSuperTypes == True:
         for card in cardListToFilter:
           currentCardName = ""
+
           for singleCard in card:
             currentCardName = singleCard.getName()
 
@@ -178,13 +276,8 @@ class Filter:
             filteredList[currentCardName] = card
 
       else:
-        filteredList = []
+        filteredList = {}
 
-    # Sort logic
-    nameList.sort(key=str.lower)
+    sortedArray = Filter.generateSortedListByName(nameList, filteredList)
 
-    sortedFilterList = []
-    for name in nameList:
-      sortedFilterList.append(filteredList[name])
-
-    return sortedFilterList
+    return sortedArray

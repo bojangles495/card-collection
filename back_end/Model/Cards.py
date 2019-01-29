@@ -46,7 +46,7 @@ class Cards:
 
     return flag
 
-  def additionalColorFilterValidity(self, matchExactFilter, matchMultiFilter, excludeFilter):
+  def additionalColorFilterConstraints(self, matchExactFilter, matchMultiFilter, excludeFilter):
     matchExact = self.getColorFilterFlag(matchExactFilter)
     matchMulti = self.getColorFilterFlag(matchMultiFilter)
     exclude = self.getColorFilterFlag(excludeFilter)
@@ -68,18 +68,16 @@ class Cards:
     return Filter.filterWithText(self.all_cards, queryToFilterOn)
 
   def filterByColor(self, topLevelFilteredList, queryToFilterOn, matchExactFilter, matchMultiFilter, excludeFilter, filteredWithSuperTypes):
-    additionalColorFilterIsValid = self.additionalColorFilterValidity(matchExactFilter, matchMultiFilter, excludeFilter)
     listToFilterWith = self.all_cards
 
     if filteredWithSuperTypes == True:
       listToFilterWith = topLevelFilteredList
 
-    if additionalColorFilterIsValid == True:
-      pprint('had additional filters')
-      # Filter.filterByColorNoConstraints(listToFilterWith, queryToFilterOn, filteredWithSuperTypes)
-      return []
+    hasAdditionalColorFilterConstraints = self.additionalColorFilterConstraints(matchExactFilter, matchMultiFilter, excludeFilter)
+
+    if hasAdditionalColorFilterConstraints == True:
+      return Filter.filterByColorWithConstraints(listToFilterWith, queryToFilterOn, filteredWithSuperTypes, Cards.getColorFilterFlag(self, matchExactFilter), Cards.getColorFilterFlag(self, matchMultiFilter), Cards.getColorFilterFlag(self, excludeFilter))
     else:
-      pprint('had not additional filters')
       return Filter.filterByColorNoConstraints(listToFilterWith, queryToFilterOn, filteredWithSuperTypes)
 
   def addCardsToAccumulator(self, accumulator, foundCardNamesList, listToAdd):
