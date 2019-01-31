@@ -1,28 +1,14 @@
 from back_end.CardData import ALLCARDSJSON
 from back_end.Model.Card import Card
 from back_end.Model.Filter import Filter
+from back_end.Model.Pagination import Pagination
 
 from pprint import pprint
 
 class Cards:
   def __init__(self):
     Cards.setCards(self)
-
-  def getSortedNamesList(self):
-    names = []
-    for cardName, card in self.all_cards.items():
-      names.append(cardName)
-
-    names.sort(key=str.lower)
-    return names
-
-  def generateListSortedByName(self):
-    sortedList = {}
-    namesList = Cards.getSortedNamesList(self)
-    for name in namesList:
-      sortedList[name] = self.all_cards[name]
-
-    return sortedList
+    Cards.resetAccumulator(self)
 
   def setCards(self):
     self.all_cards = {}
@@ -30,8 +16,6 @@ class Cards:
     for cardName, card in ALLCARDSJSON.items():
       newCard = Card(card)
       Cards.bucketFoundCardsWithSameName(self, newCard)
-
-    self.all_cards = Cards.generateListSortedByName(self)
 
   def bucketFoundCardsWithSameName(self, card):
     if card.name in self.all_cards:
@@ -59,47 +43,52 @@ class Cards:
       return False
 
   def filterByName(self, queryToFilterOn):
-    return Filter.filterWithName(self.all_cards, queryToFilterOn)
+    result = Filter.filterWithName(self.all_cards, queryToFilterOn)
+    self.addListToAccumulator(result)
 
   def filterByTypeAndSubType(self, queryToFilterOn):
-    return Filter.filterWithTypesAndSubTypes(self.all_cards, queryToFilterOn)
+    result = Filter.filterWithTypesAndSubTypes(self.all_cards, queryToFilterOn)
+    self.addListToAccumulator(result)
 
   def filterByText(self, queryToFilterOn):
-    return Filter.filterWithText(self.all_cards, queryToFilterOn)
+    result = Filter.filterWithText(self.all_cards, queryToFilterOn)
+    self.addListToAccumulator(result)
 
-  def filterByColor(self, topLevelFilteredList, queryToFilterOn, matchExactFilter, matchMultiFilter, excludeFilter, filteredWithSuperTypes):
-    listToFilterWith = self.all_cards
-
-    if filteredWithSuperTypes == True:
-      listToFilterWith = topLevelFilteredList
-
+  def filterByColor(self, queryToFilterOn, matchExactFilter, matchMultiFilter, excludeFilter, filteredWithSuperTypes):
     hasAdditionalColorFilterConstraints = self.additionalColorFilterConstraints(matchExactFilter, matchMultiFilter, excludeFilter)
 
     if hasAdditionalColorFilterConstraints == True:
-      return Filter.filterByColorWithConstraints(listToFilterWith, queryToFilterOn, filteredWithSuperTypes, Cards.getColorFilterFlag(self, matchExactFilter), Cards.getColorFilterFlag(self, matchMultiFilter), Cards.getColorFilterFlag(self, excludeFilter))
+      matchExactFlag = self.getColorFilterFlag(matchExactFilter)
+      matchMultiFlag = self.getColorFilterFlag(matchMultiFilter)
+      excludeFlag = self.getColorFilterFlag(excludeFilter)
+
+      result = Filter.filterByColorWithConstraints(self.accumulator, queryToFilterOn, matchExactFlag, matchMultiFlag, excludeFlag)
     else:
-      return Filter.filterByColorNoConstraints(listToFilterWith, queryToFilterOn, filteredWithSuperTypes)
+      result = Filter.filterByColorNoConstraints(self.accumulator, queryToFilterOn)
 
-  def addCardsToAccumulator(self, accumulator, foundCardNamesList, listToAdd):
-    if len(accumulator) > 0:
-      for card in listToAdd:
-        addCard = False
+    self.resetAccumulator()
+    self.addListToAccumulator(result)
 
-        if card[0].getName() not in foundCardNamesList:
-          addCard = True
-          foundCardNamesList.add(card[0].getName())
+  def resetAccumulator(self):
+    self.accumulator = {}
+    self.found_cards_names_list = []
 
-        if addCard == True:
-          accumulator.append(card)
+  def addListToAccumulator(self, listToAdd):
+    for cardName, card in listToAdd.items():
+      if cardName not in self.found_cards_names_list:
+        self.accumulator[cardName] = card
+        self.found_cards_names_list.append(cardName)
 
-      return accumulator
-    else:
-      for card in listToAdd:
-        if card[0].getName() not in foundCardNamesList:
-          foundCardNamesList.add(card[0].getName())
-      return listToAdd
+  def sortAccumulator(self):
+    result = []
+    self.found_cards_names_list.sort(key=str.lower)
 
-  def serializeAccumulator(self, accumulatedList):
+    for name in self.found_cards_names_list:
+      result.append(self.accumulator[name])
+
+    return result
+
+  def serialize(self, accumulatedList):
     serializedAccumulator = []
 
     for card in accumulatedList:
@@ -111,3 +100,29 @@ class Cards:
       serializedAccumulator.append(serializedList)
 
     return serializedAccumulator
+
+  def search(self, searchParams):
+    filteredOnSuperTypes = len(searchParams.getNameFilter()) > 0 or len(searchParams.getTypesFilter()) > 0 or len(searchParams.getCardTextFilter()) > 0
+
+    if filteredOnSuperTypes == True:
+        # Filter cards by super type filters first
+        self.filterByName(searchParams.getNameFilter())
+        self.filterByTypeAndSubType(searchParams.getTypesFilter())
+        self.filterByText(searchParams.getCardTextFilter())
+    else:
+        self.accumulator = self.all_cards
+
+    # Filter accumulated list
+    if len(searchParams.getColorFilter()) > 0:
+      self.filterByColor(searchParams.getColorFilter(), searchParams.getMatchExactFilter(), searchParams.getMatchMultiFilter(), searchParams.getExcludeFilter(), filteredOnSuperTypes)
+
+    # Sort list pre pagination
+    sortedCards = self.sortAccumulator()
+
+    # Paginate list
+    paginated = Pagination.paginateResponse(searchParams.getPageFilter(), sortedCards)
+
+    # SerializeResult
+    serializeResult = self.serialize(paginated)
+
+    return serializeResult
