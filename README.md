@@ -69,3 +69,12 @@ FLASK_APP=run.py flask run
 Will need to download Cards Json file from <a href="https://mtgjson.com/">https://mtgjson.com</a>
 Make sure the download file is called "AllCards.json"
 Place file under root of back_end directory
+
+## Build docker image using docker-compose
+docker-compose -f docker-compose.yml -f docker-compose.local.yml build --no-cache
+docker-compose -f docker-compose.yml -f docker-compose.local.yml build
+docker-compose up
+
+## Running python tests command line
+coverage run -m --include */card-collection/back_end/* unittest discover
+coverage html

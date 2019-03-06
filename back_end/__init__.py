@@ -7,7 +7,7 @@ from back_end.Catalog.Card import card
 # some comment
 
 app = Flask(__name__)
-
 app.register_blueprint(main, url_prefix='/')
-app.register_blueprint(cards, url_prefix='/cards')
-app.register_blueprint(card, url_prefix='/card')
+app.register_blueprint(main, url_prefix='/api')
+app.register_blueprint(cards, url_prefix='/api/cards')
+app.register_blueprint(card, url_prefix='/api/card')

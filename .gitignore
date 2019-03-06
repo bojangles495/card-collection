@@ -5,3 +5,5 @@ node_modules/
 /node_modules
 /venv
 back_end/AllCards.json
+.coverage
+htmlcov/
