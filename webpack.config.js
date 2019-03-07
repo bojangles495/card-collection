@@ -42,7 +42,7 @@ const baseConfig =
   , entry:
     { 'index':
       [ './javascript/index.js'
-      , './javascript/index.scss'
+      , './sass/index.scss'
       ]
     }
   , mode: 'development' // The `--mode` argument overrides this.
@@ -88,24 +88,29 @@ const baseConfig =
           { loader: 'babel-loader'
           }
         }
-      , { test: /\.scss$/
-        , use:
-          [ MiniCssExtractPlugin.loader
-          , 'css-loader'
-          , { loader: 'postcss-loader'
-            , options:
-              { plugins: () => (
-                  [ require('precss')
-                  , require('autoprefixer')
-                  ]
-                )
-              }
+      , { use:
+          [ { loader: 'style-loader'
             }
-          , 'sass-loader'
+          , { loader: 'css-loader'
+            }
+          , { loader: 'sass-loader'
+            }
           ]
+        , test: /\.scss$/
         }
       ]
     }
+  , resolve: 
+      { extensions:
+          [ '.js'
+          , '.scss'
+          , '.svg'
+          ]
+      , modules:
+          [ Path.resolve(topdir, 'front_end', 'javascript')
+          , Path.resolve(topdir, 'node_modules')
+          ]
+      }
   , optimization:
     { minimizer:
       [ new OptimizeCssAssetsPlugin()
