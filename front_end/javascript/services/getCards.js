@@ -1,7 +1,6 @@
 import { List } from 'immutable'
 import urlTemplate from 'url-template'
 
-// import { createAddressRecordFromObject } from 'records'
 import { getBaseUrl, getRequestInit } from './common'
 
 const cardsSearchTemplate = urlTemplate.parse('api/cards{?name,types,card_text,match_exact,exclude,match_multi,color*}')
