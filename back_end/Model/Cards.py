@@ -6,31 +6,34 @@ from back_end.Model.Pagination import Pagination
 from pprint import pprint
 
 class Cards:
-  def __init__(self):
-    Cards.setCards(self)
-    Cards.resetAccumulator(self)
+  def __init__(self, custom_cards_object=None):
+    self.setCards(custom_cards_object)
+    self.resetAccumulator()
 
-  def setCards(self):
+  def setCards(self, custom_cards_object):
     self.all_cards = {}
 
-    for cardName, card in ALLCARDSJSON.items():
-      newCard = Card(card)
-      Cards.bucketFoundCardsWithSameName(self, newCard)
+    if custom_cards_object != None:
+      self.all_cards = custom_cards_object
+    else:
+      for cardName, card in ALLCARDSJSON.items():
+        newCard = Card(card)
+        Cards.bucketFoundCardsWithSameName(self, newCard)
 
   def bucketFoundCardsWithSameName(self, card):
-    if card.name in self.all_cards:
+    if card.getName() in self.all_cards:
       self.all_cards[card.getName()].append(card)
     else:
       self.all_cards[card.getName()] = [card]
 
   def getColorFilterFlag(self, queryFilter):
     flag = False
-    if len(queryFilter) == 1 and queryFilter[0] == 'True':
+    if queryFilter != None and hasattr(queryFilter, "__len__") and len(queryFilter) == 1 and queryFilter[0] == 'True':
       flag = True
 
     return flag
 
-  def additionalColorFilterConstraints(self, matchExactFilter, matchMultiFilter, excludeFilter):
+  def additionalColorFilterConstraints(self, matchExactFilter=None, matchMultiFilter=None, excludeFilter=None):
     matchExact = self.getColorFilterFlag(matchExactFilter)
     matchMulti = self.getColorFilterFlag(matchMultiFilter)
     exclude = self.getColorFilterFlag(excludeFilter)
@@ -42,7 +45,7 @@ class Cards:
     else:
       return False
 
-  def filterByName(self, queryToFilterOn):
+  def filterByName(self, queryToFilterOn=[]):
     result = Filter.filterWithName(self.all_cards, queryToFilterOn)
     self.addListToAccumulator(result)
 
@@ -118,6 +121,8 @@ class Cards:
 
     # Sort list pre pagination
     sortedCards = self.sortAccumulator()
+
+    pprint(len(sortedCards))
 
     # Paginate list
     paginated = Pagination.paginateResponse(searchParams.getPageFilter(), sortedCards)

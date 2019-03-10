@@ -136,7 +136,7 @@ const baseConfig =
       { 'Access-Control-Allow-Origin': '*'
       }
     , proxy:
-      { '/':
+      { '/api':
           { target: 'http://flask:3011'
           , secure: false
           , changeOrigin: true
