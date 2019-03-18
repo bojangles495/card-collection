@@ -14,6 +14,8 @@ export const reducer = (state, action) => {
 
   if (action) {
     switch (action.type) {
+      case APPLICATION_ACTIONS.SET_PENDING :
+        return appState.setIn([NAMESPACE, 'pending-state'], action.payload)
       case APPLICATION_ACTIONS.SET_CLICK_HERE :
         return appState.setIn([NAMESPACE, 'set-clicker'], action.payload)
       case APPLICATION_ACTIONS.SET_CLICK_HERE_TWO :

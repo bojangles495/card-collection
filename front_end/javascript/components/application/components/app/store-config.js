@@ -9,7 +9,7 @@ let PENDING_STATE =
 
 let createConfig = (pendingState, setClicker, setClickerTwo) => {
     const config =
-        { PENDING: pendingState
+        { 'pending-state': pendingState
         , 'set-clicker': setClicker
         , 'set-clicker-two': setClicker
         }
@@ -19,6 +19,6 @@ let createConfig = (pendingState, setClicker, setClickerTwo) => {
 const APPLICATION_CONFIG = createConfig()
 const DEFAULT_APPLICATION_CONFIG = createConfig(PENDING_STATE.IDLE)
 
-export { APPLICATION_CONFIG, DEFAULT_APPLICATION_CONFIG }
+export { APPLICATION_CONFIG, DEFAULT_APPLICATION_CONFIG, PENDING_STATE }
 
     

@@ -142,7 +142,9 @@ const baseConfig =
       }
     , proxy:
       { '/api':
-          { target: 'http://flask:3011'
+          { 
+            target: 'http://flask:3011'
+          // target: 'http://localhost:5000'
           , secure: false
           , changeOrigin: true
           }

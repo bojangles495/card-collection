@@ -1,10 +1,12 @@
-export * from './app'
+// export * from './app'
 import { ApplicationContainer
         , APPLICATION_NAMESPACE
         , ApplicationReducer
-        , createDefaultApplicationRecord } from './app'
+        , createDefaultApplicationRecord
+        , SERVICES } from './app'
 
 export { ApplicationContainer
         , APPLICATION_NAMESPACE
         , ApplicationReducer
-        , createDefaultApplicationRecord }
+        , createDefaultApplicationRecord
+        , SERVICES }

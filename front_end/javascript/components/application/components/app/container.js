@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 
 import { Application } from './component'
-import { testActionCreator, testActionCreatorTwo } from './action-creators'
+import { testActionCreator, testActionCreatorTwo, getCards } from './action-creators'
 
 const mapStateToProps = (state, ownProps) => {
 	return {}
@@ -10,6 +10,7 @@ const mapStateToProps = (state, ownProps) => {
 const dispatchProps = 
 	{ testActionCreator
 	, testActionCreatorTwo
+  , getCards
 	}
 
 export const ApplicationContainer = connect(mapStateToProps, dispatchProps)(Application)

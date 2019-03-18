@@ -7,9 +7,6 @@ import { getCurrentCheckedValue } from './selectors'
 const mapStateToProps = (state, ownProps) => {
   const componentId = !ownProps.componentId ? 'default' : ownProps.componentId
   const checked = getCurrentCheckedValue(state, componentId)
-
-  console.log('mp - componentId: ', componentId)
-  console.log('mp - checked: ', checked)
   
   return { componentId, checked }
 }
