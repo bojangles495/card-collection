@@ -42,7 +42,7 @@ const baseConfig =
   , entry:
     { 'index':
       [ './javascript/index.js'
-      , './javascript/index.scss'
+      , './sass/index.scss'
       ]
     }
   , mode: 'development' // The `--mode` argument overrides this.
@@ -85,27 +85,47 @@ const baseConfig =
       , { test: /\.m?js$/
         , exclude: /(node_modules|bower_components)/
         , use:
-          { loader: 'babel-loader'
+          { loader: 'babel-loader',
+              options: {
+                cacheDirectory: true,
+                babelrc: false,
+                presets: [
+                  [ 
+                    '@babel/preset-env', 
+                    { targets: { browsers: 'last 2 versions' }, "useBuiltIns": "usage" }
+                  ],
+                  '@babel/preset-react'
+                ],
+                plugins: [
+                  ['@babel/plugin-proposal-class-properties', { loose: true }]
+                ]
+              }
+
           }
         }
-      , { test: /\.scss$/
-        , use:
-          [ MiniCssExtractPlugin.loader
-          , 'css-loader'
-          , { loader: 'postcss-loader'
-            , options:
-              { plugins: () => (
-                  [ require('precss')
-                  , require('autoprefixer')
-                  ]
-                )
-              }
+      , { use:
+          [ { loader: 'style-loader'
             }
-          , 'sass-loader'
+          , { loader: 'css-loader'
+            }
+          , { loader: 'sass-loader'
+            }
           ]
+        , test: /\.scss$/
         }
       ]
     }
+  , resolve: 
+      { extensions:
+          [ '.js'
+          , '.scss'
+          , '.svg'
+          ]
+      , modules:
+          [ Path.resolve(topdir, 'front_end', 'javascript')
+          , Path.resolve(topdir, 'node_modules')
+          ]
+      }
   , optimization:
     { minimizer:
       [ new OptimizeCssAssetsPlugin()
@@ -137,7 +157,9 @@ const baseConfig =
       }
     , proxy:
       { '/api':
-          { target: 'http://flask:3011'
+          { 
+            target: 'http://flask:3011'
+          // target: 'http://localhost:5000'
           , secure: false
           , changeOrigin: true
           }
