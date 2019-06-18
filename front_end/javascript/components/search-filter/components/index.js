@@ -1,3 +1,3 @@
-import { Filter, CONSTANTS, SearchFilterContainer } from './filter'
+import { Filter, CONSTANTS, SearchFilterContainer, SearchFilterReducer } from './filter'
 
-export { Filter, CONSTANTS, SearchFilterContainer }
+export { Filter, CONSTANTS, SearchFilterContainer, SearchFilterReducer }

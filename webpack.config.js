@@ -85,7 +85,22 @@ const baseConfig =
       , { test: /\.m?js$/
         , exclude: /(node_modules|bower_components)/
         , use:
-          { loader: 'babel-loader'
+          { loader: 'babel-loader',
+              options: {
+                cacheDirectory: true,
+                babelrc: false,
+                presets: [
+                  [ 
+                    '@babel/preset-env', 
+                    { targets: { browsers: 'last 2 versions' }, "useBuiltIns": "usage" }
+                  ],
+                  '@babel/preset-react'
+                ],
+                plugins: [
+                  ['@babel/plugin-proposal-class-properties', { loose: true }]
+                ]
+              }
+
           }
         }
       , { use:

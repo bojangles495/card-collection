@@ -4,21 +4,20 @@ try {
   window.fetch = undefined
 }
 
-import "@babel/polyfill"
+require('@babel/polyfill')
 require('./fetch')
 
-import { Map, Record } from 'immutable'
+const { Map } = require('immutable')
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { applyMiddleware, compose, createStore } from 'redux'
 import { createLogger } from 'redux-logger'
 import ReduxThunk from 'redux-thunk'
-import reduceReducers from 'reduce-reducers'
 
 import { STORE } from './store'
 import { rootReducer } from './store/root-reducer'
-import { ApplicationContainer } from './components/application'
+import { Application } from './components/application'
 
 const testMiddleware = ({dispatch, getState}) => {
   return next => action => {
@@ -28,7 +27,6 @@ const testMiddleware = ({dispatch, getState}) => {
     console.log('updatedState: ', updatedState)
   }
 }
-
 
 const logger = createLogger({ stateTransformer: state => state.toJS() })
 const middleware = [ logger, ReduxThunk, testMiddleware ]
@@ -41,7 +39,7 @@ const store = createStore(rootReducer, preloadedState, enhancer)
 
 ReactDOM.render
   ( <Provider store={store}>
-      <ApplicationContainer />
+      <Application />
     </Provider>
   , document.getElementById('root')
   )

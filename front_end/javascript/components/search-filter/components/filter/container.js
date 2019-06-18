@@ -1,17 +1,20 @@
 import { connect } from 'react-redux'
 
+import { SERVICE_ACTION_CREATORS } from 'services'
+
 import { Filter } from './component'
 import { CONSTANTS } from './constants'
 import { getRecord } from 'components/red-green-toggle'
 import * as temp from 'components/red-green-toggle'
-import * as app from 'components/application/index.js'
+import { updateInputField } from './action-creators'
+import { getInputField } from './selectors'
 
-const getCards = (dispatch) => {
-  console.log('dispatch: ', dispatch)
-  console.log(app.SERVICES)
+const getCards = (...args) => async dispatch => {
+  const getCardsResponse = await service_endpoints.getCards({...args[0]})
 }
 
 const mapStateToProps = (state) => {
+  const inputField = getInputField(state)
   const nameFilterRecord = getRecord(state, CONSTANTS.CARD_NAME_FILTER)
   const typesFilterRecord = getRecord(state, CONSTANTS.CARD_TYPES_FILTER)
   const textFilterRecord = getRecord(state, CONSTANTS.CARD_TEXT_FILTER)
@@ -24,10 +27,9 @@ const mapStateToProps = (state) => {
   const excludeFilterRecord = getRecord(state, CONSTANTS.EXCLUDE_FILTER)
   const multiFilterRecord = getRecord(state, CONSTANTS.MATCH_MULTI_FILTER)
 
-  mapDispatchToProps.getCards = app.SERVICES.getCards
-
   const props = 
-    { nameFilterRecord
+    { inputField
+    , nameFilterRecord
     , typesFilterRecord
     , textFilterRecord
     , greenManaFilterRecord
@@ -44,7 +46,8 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = 
-  { getCards
+  { getCards: SERVICE_ACTION_CREATORS.getCards
+  , updateInputField
   }
 
 const SearchFilterContainer = connect(mapStateToProps, mapDispatchToProps)(Filter)

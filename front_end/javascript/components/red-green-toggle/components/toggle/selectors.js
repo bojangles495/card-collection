@@ -4,7 +4,7 @@ import { createRedGreenToggleRecord } from './record'
 
 export const getRecord = (state, componentId) => {
   if(!state.hasIn([NAMESPACE, componentId])) {
-    return createRedGreenToggleRecord
+    return createRedGreenToggleRecord()
   } else {
     let record = state.getIn([NAMESPACE, componentId])
 
